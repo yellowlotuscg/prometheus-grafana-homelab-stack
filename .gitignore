@@ -1,0 +1,9 @@
+# Runtime state and local credentials
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+__pycache__/
+.venv/
+validation-output/

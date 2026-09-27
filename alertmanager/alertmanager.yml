@@ -1,0 +1,16 @@
+global:
+  resolve_timeout: 5m
+route:
+  receiver: replace-with-your-own-webhook
+  group_by: [alertname, job, instance]
+  group_wait: 30s
+  group_interval: 1m
+  repeat_interval: 4h
+receivers:
+  - name: replace-with-your-own-webhook
+    webhook_configs:
+      # REPLACE WITH YOUR OWN reachable webhook URL before expecting delivery.
+      # Loopback port 65535 inside Alertmanager is intentionally unused.
+      # This safe placeholder sends no alerts to third-party services.
+      - url: http://127.0.0.1:65535/replace-with-your-own-webhook
+        send_resolved: true

@@ -1,0 +1,58 @@
+groups:
+- name: homelab-host-alerts
+  rules:
+  - alert: InstanceDown
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: Scrape target is down
+      description: Prometheus cannot scrape {{ $labels.job }} at {{ $labels.instance
+        }}.
+      runbook_url: https://github.com/yellowlotuscg/prometheus-grafana-homelab-stack/blob/main/runbook.md#instancedown
+  - alert: HighCPU
+    expr: 100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{job="node-exporter",mode="idle"}[5m])))
+      > 85
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: Host CPU is busy
+      description: Non-idle CPU exceeds 85% for five minutes on {{ $labels.instance
+        }}.
+      runbook_url: https://github.com/yellowlotuscg/prometheus-grafana-homelab-stack/blob/main/runbook.md#highcpu
+  - alert: HighMemory
+    expr: 100 * (1 - node_memory_MemAvailable_bytes{job="node-exporter"} / node_memory_MemTotal_bytes{job="node-exporter"})
+      > 90
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: Available memory is low
+      description: Memory usage exceeds 90% for five minutes on {{ $labels.instance
+        }}.
+      runbook_url: https://github.com/yellowlotuscg/prometheus-grafana-homelab-stack/blob/main/runbook.md#highmemory
+  - alert: DiskFilling
+    expr: (100 * node_filesystem_avail_bytes{job="node-exporter",fstype!~"tmpfs|devtmpfs|overlay|squashfs|nsfs"}
+      / node_filesystem_size_bytes{job="node-exporter",fstype!~"tmpfs|devtmpfs|overlay|squashfs|nsfs"}
+      < 15) and on (instance, device, mountpoint) (node_filesystem_readonly{job="node-exporter"}
+      == 0)
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: Filesystem free space is low
+      description: Less than 15% space available on {{ $labels.instance }} {{ $labels.mountpoint
+        }} for ten minutes.
+      runbook_url: https://github.com/yellowlotuscg/prometheus-grafana-homelab-stack/blob/main/runbook.md#diskfilling
+  - alert: NodeExporterScrapeMissing
+    expr: absent(up{job="node-exporter"})
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: Node exporter target series is missing
+      description: No up series exists for job node-exporter. Check target configuration
+        and discovery.
+      runbook_url: https://github.com/yellowlotuscg/prometheus-grafana-homelab-stack/blob/main/runbook.md#nodeexporterscrapemissing
